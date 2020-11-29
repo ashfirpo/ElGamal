@@ -1,0 +1,10 @@
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.csprojAssemblyReference.cache
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.Properties.Resources.resources
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.csproj.GenerateResource.cache
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.csproj.CoreCompileInputs.cache
+C:\Users\aaash\Desktop\ElGamal\ElGamal\bin\Debug\ElGamal.exe.config
+C:\Users\aaash\Desktop\ElGamal\ElGamal\bin\Debug\ElGamal.exe
+C:\Users\aaash\Desktop\ElGamal\ElGamal\bin\Debug\ElGamal.pdb
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.exe
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.pdb
+C:\Users\aaash\Desktop\ElGamal\ElGamal\obj\Debug\ElGamal.FormInicio.resources
