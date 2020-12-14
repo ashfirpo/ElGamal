@@ -127,7 +127,7 @@ namespace ElGamal
             //Mostramos toda la info
             txtTextoPlano.Text = texto;
             txtPlanoCifrado.Text = Encoding.Default.GetString(cifrado);
-            txtPlanoDescifrado.Text = Encoding.UTF8.GetString(plaintext_candidato);
+            txtPlanoDescifrado.Text = Encoding.Default.GetString(plaintext_candidato);
         }
 
 

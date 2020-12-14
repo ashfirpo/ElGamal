@@ -178,6 +178,7 @@
             this.txtEncriptar.Location = new System.Drawing.Point(184, 6);
             this.txtEncriptar.Multiline = true;
             this.txtEncriptar.Name = "txtEncriptar";
+            this.txtEncriptar.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtEncriptar.Size = new System.Drawing.Size(572, 69);
             this.txtEncriptar.TabIndex = 3;
             // 
@@ -446,7 +447,6 @@
             this.txtPlanoDescifrado.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtPlanoDescifrado.Size = new System.Drawing.Size(249, 170);
             this.txtPlanoDescifrado.TabIndex = 24;
-            this.txtPlanoDescifrado.WordWrap = false;
             // 
             // label15
             // 
