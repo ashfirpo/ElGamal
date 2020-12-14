@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ElGamal
@@ -18,15 +14,16 @@ namespace ElGamal
 
         public ElGamalAbstractCipher(ElGamalKeyStruct p_key_struct)
         {
-            // set the key details
+            //Setemos las keys
             key_struct = p_key_struct;
 
-            // calculate the blocksizes
+            //Calculamos el tamaño de los bloques
             plaintext_blocksize = (p_key_struct.P.bitCount() - 1) / 8;
             ciphertext_blocksize = ((p_key_struct.P.bitCount() + 7) / 8) * 2;
 
-            // set the default block for plaintext, which is suitable for encryption
+            //Seteamos el tamaño por defecto del bloque a encriptar
             block_size = plaintext_blocksize;
+
         }
 
         protected abstract byte[] ProcessDataBlock(byte[] p_block);
@@ -36,30 +33,14 @@ namespace ElGamal
 
         public byte[] ProcessData(byte[] p_data)
         {
-
-            // create a stream backed by a memory array
             MemoryStream x_stream = new MemoryStream();
-            // determine how many complete blocks there are
+            //Calculamos la cantidad de bloques completos que necesitamos
             int x_complete_blocks = p_data.Length / block_size;
 
-            // create an array which will hold a block
-            /*byte[] x_block = new Byte[block_size];
 
-            // run through and process the complete blocks
-            int i = 0;
-            
-            for (; i < x_complete_blocks; i++)
-            {
-                // copy the block and create the big integer
-                Array.Copy(p_data, i * block_size, x_block, 0, block_size);
-                // process the block
-                byte[] x_result = ProcessDataBlock(x_block);
-                // write the processed data into the stream
-                x_stream.Write(x_result, 0, x_result.Length);
-            }*/
-
-
+            Console.WriteLine("Procesando " + x_complete_blocks + 1 + " bloques...");
             ConcurrentDictionary<int, byte[]> resultados = new ConcurrentDictionary<int, byte[]>();
+            //Procesamos cada uno de los bloques
             Parallel.For(0, x_complete_blocks, i =>
             {
                 byte[] x_block = new byte[block_size];
@@ -68,21 +49,22 @@ namespace ElGamal
                 resultados.TryAdd(i, x_result);
             });
 
+            //Unimos todos los resultados en un mismo espacio de memoria
             foreach (var res in resultados)
             {
                 x_stream.Write(res.Value, 0, res.Value.Length);
             }
 
+            //Calculamos el tamaño del ultimo bloque (que es menor al tamaño completo) y lo procesamos
             byte[] x_final_block = new Byte[p_data.Length - (x_complete_blocks * block_size)];
             Array.Copy(p_data, (x_complete_blocks) * block_size, x_final_block, 0, x_final_block.Length);
 
-             // process the final block
-             byte[] x_final_result = ProcessFinalDataBlock(x_final_block);
+            byte[] x_final_result = ProcessFinalDataBlock(x_final_block);
 
-            // write the final data bytes into the stream
+            //Escribimos el resultado del último bloque procesado junto al resto
             x_stream.Write(x_final_result, 0, x_final_result.Length);
 
-            // return the contents of the stream as a byte array
+            //Retornamos todo procesado
             return x_stream.ToArray();
         }
     }

@@ -14,27 +14,27 @@ namespace ElGamal
 
         protected override byte[] ProcessDataBlock(byte[] p_block)
         {
-            // the random number, K
+            //Creamos el número aleatorio K
             BigInteger K;
-            // create K, which is the random number        
+            //Buscamos que sea coprimo con P
             do
             {
                 K = new BigInteger();
                 K.genRandomBits(key_struct.P.bitCount() - 1, random);
             } while (K.gcd(key_struct.P - 1) != 1);
 
-            // compute the values A and B
+            //Computamos los valores de A y B
             BigInteger A = key_struct.G.modPow(K, key_struct.P);
             BigInteger B = (key_struct.Y.modPow(K, key_struct.P) * new BigInteger(p_block)) % (key_struct.P);
 
-            // create an array to contain the ciphertext
+            //Creamos un array que contenga el cifrado
             byte[] x_result = new byte[ciphertext_blocksize];
-            // copy the bytes from A and B into the result array
+            //Copiamos A y B en el array del resultado
             byte[] x_a_bytes = A.getBytes();
             Array.Copy(x_a_bytes, 0, x_result, ciphertext_blocksize / 2 - x_a_bytes.Length, x_a_bytes.Length);
             byte[] x_b_bytes = B.getBytes();
             Array.Copy(x_b_bytes, 0, x_result, ciphertext_blocksize - x_b_bytes.Length, x_b_bytes.Length);
-            // return the result array
+            
             return x_result;
         }
 
@@ -45,8 +45,8 @@ namespace ElGamal
             {
                 if (p_final_block.Length < block_size)
                 {
-                    // create a fullsize block which contains the
-                    // data to encrypt followed by trailing zeros
+                    //Creamos un nuevo bloque del tamaño correspondiente y llenamos el espacio
+                    //sobrante con ceros
                     byte[] x_padded = new byte[block_size];
                     Array.Copy(p_final_block, 0, x_padded, 0, p_final_block.Length);
                     return ProcessDataBlock(x_padded);
@@ -61,5 +61,6 @@ namespace ElGamal
                 return new byte[0];
             }
         }
+
     }
 }

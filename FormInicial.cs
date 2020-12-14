@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace ElGamal
 {
@@ -16,10 +11,8 @@ namespace ElGamal
     {
         private byte[] imagen;
         private byte[] txt;
-        Bitmap img;
-        private BitmapData bmpData;
-        private IntPtr ptr;
-        private int bytes;
+        private byte[] cifrado;
+        private Stopwatch watch = new Stopwatch();
 
         public FormInicio()
         {
@@ -31,40 +24,59 @@ namespace ElGamal
             switch (tabEncriptar.SelectedIndex)
             {
                 case 0:
-                    //texto
+                    //Texto plano
                     if (txtEncriptar.Text == string.Empty)
                         MessageBox.Show("Se tiene que ingresar un texto a encriptar.", "Campo incompleto", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
                     else
-                        encriptarTexto(txtEncriptar.Text);
-                    break;
-
-                case 1:
-                    //imagen
-                    if (txtArchivo.Text == string.Empty)
-                        MessageBox.Show("Se tiene que seleccionar un archivo a encriptar.", "Archivo no seleccionado", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
-                    else
                     {
-                        encriptarImagen();
-                        panelTexto.Visible = false;
-                        panelImagen.Visible = true;
+                        lblStatus.Text = "Procesando...";
+                        encriptarTexto(txtEncriptar.Text);
+                        visibilidad(true, false, false);
+                        informarProgreso();
                     }
                     break;
 
                 case 2:
-                    //txt
+                    //Imagen
+                    if (txtArchivo.Text == string.Empty)
+                        MessageBox.Show("Se tiene que seleccionar un archivo a encriptar.", "Archivo no seleccionado", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    else
+                    {
+                        lblStatus.Text = "Procesando...";
+                        encriptarImagen();
+                        visibilidad(false, false, true);
+                        informarProgreso();
+                    }
+                    break;
+
+                case 1:
+                    //Archivo txt
                     if (txtTexto.Text == string.Empty)
                         MessageBox.Show("Se tiene que seleccionar un archivo a encriptar.", "Archivo no seleccionado", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
                     else
                     {
+                        lblStatus.Text = "Procesando...";
                         encriptarTxt();
-                        panelTexto.Visible = true;
-                        panelImagen.Visible = false;
+                        visibilidad(false, true, false);
+                        informarProgreso();
                     }
                     break;
 
                 default:
                     break;
             }
+        }
+
+        private void visibilidad(bool plano, bool archivo, bool imagen)
+        {
+            panelPlano.Visible = plano;
+            panelTexto.Visible = archivo;
+            panelImagen.Visible = imagen;           
+        }
+
+        private void informarProgreso()
+        {
+            lblStatus.Text = "Listo: Fin del proceso - Tiempo transcurrido: " + watch.Elapsed.Minutes + " min., " + watch.Elapsed.Seconds + " seg., " + watch.Elapsed.Milliseconds + " ms.";
         }
 
 
@@ -84,14 +96,22 @@ namespace ElGamal
             //Ahora que ya generamos claves, pasamos a encriptar
             ElGamal encriptar = new ElGamalManaged();
             encriptar.FromXmlString(gamal.ToXmlString(false));
-            byte[] ciphertext = gamal.EncriptarData(plaintext);
+            Console.WriteLine("--- Encriptado ---");
+
+            //Tomamos el tiempo (opcional)
+            watch.Start();
+            cifrado = gamal.EncriptarData(plaintext);
 
 
             //Creamos una nueva instancia para desencriptar
             ElGamal desencriptar = new ElGamalManaged();
             desencriptar.FromXmlString(gamal.ToXmlString(true));
-            //Restauramos el texto plano
-            byte[] plaintext_candidato = desencriptar.DesencriptarData(ciphertext);
+            Console.WriteLine("--- Desencriptado ---");
+            byte[] plaintext_candidato = desencriptar.DesencriptarData(cifrado);
+
+            watch.Stop();
+            Console.WriteLine("--- FIN DEL PROCESO ---");
+            //Console.WriteLine("Tiempo transcurrido: " + watch.Elapsed.ToString());
 
             return plaintext_candidato;
         }
@@ -101,61 +121,34 @@ namespace ElGamal
         {
             //Tomamos los bytes del texto plano
             byte[] plaintext = Encoding.Default.GetBytes(texto);
-
+            //Encriptamos
             byte[] plaintext_candidato = encriptar(plaintext);
 
-            lblCiphertext.Text = "Array: " + plaintext_candidato.ToString() + "\n" +
-                Encoding.Default.GetString(plaintext_candidato);
-
-            lblComparacion.Text = "Encriptacion basica:\n\n";
-            compararArrays(plaintext, plaintext_candidato);
-            lblDescifrado.Text = Encoding.Default.GetString(plaintext_candidato);
-            lblOriginal.Text = Encoding.Default.GetString(plaintext);
+            //Mostramos toda la info
+            txtTextoPlano.Text = texto;
+            txtPlanoCifrado.Text = Encoding.Default.GetString(cifrado);
+            txtPlanoDescifrado.Text = Encoding.UTF8.GetString(plaintext_candidato);
         }
 
 
         private void encriptarImagen()
         {
             byte[] imagen_candidato = encriptar(imagen);
-
-            lblCiphertext.Text = "Array: " + imagen_candidato.ToString();
-
-            lblComparacion.Text = "Encriptacion basica:\n\n";
-            compararArrays(imagen, imagen_candidato);
-            
+            //Mostramos los 3 resultados
             arrayAImagen(imagen, imagen_candidato);
+            txtImagenCifrada.Text = Encoding.Default.GetString(cifrado);
         }
 
 
         private void encriptarTxt()
         {
-            //Restauramos el texto plano
             byte[] txt_candidato = encriptar(txt);
 
-            lblCiphertext.Text = "Array: " + txt_candidato.ToString() + "\n\n" +
-                Encoding.Default.GetString(txt_candidato);
-
-            lblComparacion.Text = "Encriptacion basica:\n\n";
-            compararArrays(txt, txt_candidato);
-            lblDescifrado.Text = Encoding.Default.GetString(txt_candidato);
-            lblOriginal.Text = Encoding.Default.GetString(txt);
+            txtArchivoOriginal.Text = Encoding.UTF8.GetString(txt);
+            txtArchivoCifrado.Text = Encoding.Default.GetString(cifrado);
+            txtArchivoDescifrado.Text = Encoding.UTF8.GetString(txt_candidato);
         }
 
-
-        private bool compararArrays(byte[] arr1, byte[] arr2)
-        {
-            Parallel.For(0, arr1.Length, i =>
-            {
-                if (arr1[i] != arr2[i])
-                {
-                    lblComparacion.Text += "Item " + i + ": " + arr1[i] + " --> " + arr2[i];
-                    lblComparacion.Text += " = FALSE\n\n";
-                }
-            });
-
-            lblComparacion.Text += "\n\n\nTODO OK";
-            return true;
-        }
 
         private void arrayAImagen(byte[] original, byte[] candidato)
         {
@@ -216,13 +209,16 @@ namespace ElGamal
             txtArchivo.Clear();
             txtEncriptar.Clear();
             txtTexto.Clear();
-            lblCiphertext.Clear();
-            lblComparacion.Clear();
-            lblDescifrado.Clear();
-            lblOriginal.Clear();
+            txtTextoPlano.Clear();
+            txtPlanoDescifrado.Clear();
+            txtPlanoCifrado.Clear();
+            txtArchivoCifrado.Clear();
+            txtArchivoDescifrado.Clear();
+            txtArchivoOriginal.Clear();
+            txtImagenCifrada.Clear();
             lblXml.Clear();
-            panelTexto.Visible = false;
-            panelImagen.Visible = false;
+            lblStatus.Text = "Listo";
+            panelPlano.Visible = panelTexto.Visible = panelImagen.Visible = false;
         }
     }
 }
